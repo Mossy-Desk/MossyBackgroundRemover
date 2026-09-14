@@ -1,0 +1,77 @@
+# Configuration for cargo-deny
+# See: https://github.com/EmbarkStudios/cargo-deny
+
+[licenses]
+# Licenses allowed for the project
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+]
+
+# Explicitly denied licenses
+deny = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-3.0",
+]
+
+# Default confidence threshold
+confidence-threshold = 0.8
+
+# Exceptions for specific packages
+[[licenses.exceptions]]
+allow = ["Unicode-DFS-2016"]
+name = "unicode-ident"
+
+[advisories]
+# Vulnerability database
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+
+# Accepted vulnerability level
+vulnerability = "deny"
+unmaintained = "warn"
+yanked = "warn"
+notice = "warn"
+
+# Ignore certain vulnerabilities (temporary)
+ignore = [
+    # "RUSTSEC-2020-0001", # Example temporary exception
+]
+
+[bans]
+# Banned packages
+multiple-versions = "warn" # Warn about multiple versions
+wildcards = "allow" # Allow wildcards in Cargo.toml
+highlight = "all"
+
+# Specifically banned packages
+deny = [
+    # { name = "openssl", version = "0.7" }, # Example
+]
+
+# Duplicate packages (allow multiple versions)
+skip = [
+    # { name = "winapi", version = "=0.2" }, # Example for winapi
+]
+
+# Dependency graph
+skip-tree = [
+    # { name = "windows-sys" }, # Skip entire dependency tree
+]
+
+[sources]
+# Allowed package sources
+unknown-registry = "warn"
+unknown-git = "warn"
+
+# Allowed registries
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+# Allowed Git repos
+allow-git = []

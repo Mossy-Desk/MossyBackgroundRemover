@@ -1,0 +1,60 @@
+# ============================================
+# OS & System Files
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+.claude
+
+# ============================================
+# IDEs & Editors
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+CLAUDE.md
+
+# ============================================
+# Frontend (Svelte + Vite)
+# ============================================
+mossbgr/node_modules/
+mossbgr/.svelte-kit/
+mossbgr/build/
+mossbgr/package/
+mossbgr/.env
+mossbgr/.env.*
+!mossbgr/.env.example
+mossbgr/vite.config.js.timestamp-*
+mossbgr/vite.config.ts.timestamp-*
+
+# ============================================
+# Backend (Rust + Tauri)
+# ============================================
+mossbgr/src-tauri/target/
+mossbgr/src-tauri/gen/
+
+# NOTE: mossbgr/src-tauri/models/u2netp.onnx (~4.4MB) is intentionally
+# tracked — it's embedded into the binary via include_bytes! at compile
+# time, not downloaded at runtime. Don't add a blanket *.onnx ignore here.
+
+# ============================================
+# Logs
+# ============================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+.cache/
+
+# ============================================
+# GitHub Actions
+# ============================================
+.github/artifacts/

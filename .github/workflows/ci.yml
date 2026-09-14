@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+# Add explicit permissions
+permissions:
+  contents: read
+  actions: write
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # Frontend tests and build
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mossbgr
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './mossbgr/package-lock.json'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend linting
+        run: npm run check
+
+      - name: Build frontend
+        run: npm run build
+
+      # Optional: add frontend tests here
+      # - name: Run frontend tests
+      #   run: npm test
+
+  # Rust backend tests and build
+  backend:
+    name: Backend CI
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./mossbgr/src-tauri
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './mossbgr/src-tauri -> target'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        uses: ./.github/actions/install-tauri-linux-deps
+
+      - name: Check Rust formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Rust linting
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run Rust tests
+        run: cargo test --all-features
+
+      - name: Check Rust build
+        run: cargo build --release
+
+  # Integration test (Tauri build)
+  integration:
+    name: Integration Test
+    runs-on: ${{ matrix.os }}
+    needs: [frontend, backend]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './mossbgr/package-lock.json'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './mossbgr/src-tauri -> target'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        uses: ./.github/actions/install-tauri-linux-deps
+
+      - name: Install frontend dependencies
+        working-directory: ./mossbgr
+        run: npm ci
+
+      - name: Build Tauri app (debug)
+        working-directory: ./mossbgr
+        run: npm run tauri build -- --debug
+
+  # Quality summary
+  ci-complete:
+    name: CI Complete
+    runs-on: ubuntu-latest
+    needs: [frontend, backend, integration]
+    steps:
+      - name: All CI checks passed
+        run: echo "All CI checks completed successfully!"
