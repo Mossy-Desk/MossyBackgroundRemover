@@ -39,11 +39,11 @@ No part of the model's weights or architecture was created by this project: all 
 U²-Net authors above.
 
 # Features
-- **Local background removal** — runs a u2netp ONNX segmentation model on
+- **Local background removal**: runs a u2netp ONNX segmentation model on
   your own machine via the `ort` crate; images are never sent anywhere.
-- **No download, ready instantly** — the ~4.4MB lightweight model is
+- **No download, ready instantly**: the ~4.4MB lightweight model is
   embedded in the app itself, not fetched on first run.
-- **Before/after preview** — see the original and the result side by side.
+- **Before/after preview**: see the original and the result side by side.
 - **Export as PNG** — save the result with a transparent background.
 
 v1 handles one PNG/JPEG image at a time; batch/folder processing is a future addition, not part of this release.
