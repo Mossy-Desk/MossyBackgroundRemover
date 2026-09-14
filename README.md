@@ -14,8 +14,8 @@ See [Credits](#credits) below for full attribution.
 This app embeds a third-party, open-source neural network to do the actual
 background removal:
 
-- **Model**: [U²-Net](https://github.com/xuebinqin/U-2-Net) (u2netp variant)
-  — Xuebin Qin, Zichen Zhang, Chenyang Huang, Masood Dehghan, Osmar Zaiane,
+- **Model**: [U²-Net](https://github.com/xuebinqin/U-2-Net) (u2netp variant):
+  Xuebin Qin, Zichen Zhang, Chenyang Huang, Masood Dehghan, Osmar Zaiane,
   Martin Jagersand. *"U²-Net: Going Deeper with Nested U-Structure for
   Salient Object Detection"*, Pattern Recognition, 2020. Licensed under the
   [Apache License 2.0](https://github.com/xuebinqin/U-2-Net/blob/master/LICENSE).
@@ -44,7 +44,7 @@ U²-Net authors above.
 - **No download, ready instantly**: the ~4.4MB lightweight model is
   embedded in the app itself, not fetched on first run.
 - **Before/after preview**: see the original and the result side by side.
-- **Export as PNG** — save the result with a transparent background.
+- **Export as PNG**: save the result with a transparent background.
 
 v1 handles one PNG/JPEG image at a time; batch/folder processing is a future addition, not part of this release.
 
@@ -70,7 +70,7 @@ npm install
 
 ## Quick Start
 
-Launch the app in dev mode (watch mode — Rust changes rebuild and restart
+Launch the app in dev mode (watch mode, Rust changes rebuild and restart
 the app, frontend changes hot-reload):
 
 ```bash
@@ -89,7 +89,7 @@ code with the app open and it picks up the change automatically.
 ```
 
 ### `./scripts/quickie.sh`
-Runs format check and clippy on both frontend and backend — useful during
+Runs format check and clippy on both frontend and backend, useful during
 local iteration.
 ```bash
 ./scripts/quickie.sh
