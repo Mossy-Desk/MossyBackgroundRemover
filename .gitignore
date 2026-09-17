@@ -35,6 +35,11 @@ mossbgr/vite.config.ts.timestamp-*
 mossbgr/src-tauri/target/
 mossbgr/src-tauri/gen/
 
+# ============================================
+# Release builds (scripts/build-release.sh output)
+# ============================================
+/dist/
+
 # NOTE: mossbgr/src-tauri/models/u2netp.onnx (~4.4MB) is intentionally
 # tracked — it's embedded into the binary via include_bytes! at compile
 # time, not downloaded at runtime. Don't add a blanket *.onnx ignore here.
