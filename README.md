@@ -50,19 +50,48 @@ v1 handles one PNG/JPEG image at a time; batch/folder processing is a future add
 
 # Installation
 
-## Prerequisites
+## Download an installer
+
+Grab the latest installer for your system from the
+[Releases page](https://github.com/Mossy-Desk/MossyBackgroundRemover/releases/latest):
+
+| System | File to download |
+| --- | --- |
+| **Windows** | `mossbgr_<version>_x64-setup.exe` (recommended) or `mossbgr_<version>_x64_en-US.msi` |
+| **macOS** (Apple Silicon) | `mossbgr_<version>_aarch64.dmg` |
+| **Linux** (Debian/Ubuntu) | `mossbgr_<version>_amd64.deb` |
+| **Linux** (Fedora/openSUSE) | `mossbgr-<version>-1.x86_64.rpm` |
+
+Then install it the usual way for your platform:
+
+- **Windows**: run the `.exe` or `.msi`. The installer isn't code-signed, so
+  SmartScreen may warn you: click **More info** > **Run anyway**.
+- **macOS**: open the `.dmg` and drag the app into `Applications`. The app
+  isn't notarized, so the first launch may be blocked: right-click the app >
+  **Open**, or allow it under **System Settings** > **Privacy & Security**.
+- **Linux**:
+  ```bash
+  sudo apt install ./mossbgr_*_amd64.deb   # Debian/Ubuntu
+  sudo dnf install ./mossbgr-*.x86_64.rpm   # Fedora
+  ```
+
+The model ships inside the app, so there is nothing else to download: it
+works offline right after installation.
+
+## Building from source
+
+### Prerequisites
 - **Node.js** 18+ and npm (for frontend)
 - **Rust** 1.70+ (for backend)
 - **Tauri CLI** (auto-installed by npm during setup)
 
-## Setup
+### Setup
 
 Clone the repository and install dependencies:
 
 ```bash
-git clone <repository-url>
-cd MossyBackgroundRemover
-cd mossbgr
+git clone https://github.com/Mossy-Desk/MossyBackgroundRemover.git
+cd MossyBackgroundRemover/mossbgr
 npm install
 ```
 
