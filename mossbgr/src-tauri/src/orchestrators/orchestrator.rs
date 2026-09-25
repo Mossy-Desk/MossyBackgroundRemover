@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use image::DynamicImage;
 
 use crate::contracts::*;
@@ -25,16 +27,24 @@ impl BackgroundRemoverOrchestrator {
         }
     }
 
-    pub fn handle_pick_and_load_image(&mut self) -> Result<Option<ImagePreviewDto>, String> {
+    pub fn get_path_from_dialog(&mut self) -> Result<Option<ImagePreviewDto>, String> {
         let Some(path) = self.dialog_worker.pick_image_file()? else {
             return Ok(None);
         };
 
-        let image = self.image_converter_worker.decode_from_path(&path)?;
+        self.load_image_from_path(&path).map(Some)
+    }
+
+    pub fn get_path_from_drop(&mut self, path: PathBuf) -> Result<ImagePreviewDto, String> {
+        self.load_image_from_path(&path)
+    }
+
+    fn load_image_from_path(&mut self, path: &Path) -> Result<ImagePreviewDto, String> {
+        let image = self.image_converter_worker.decode_from_path(path)?;
         let preview = self.image_converter_worker.to_preview_dto(&image)?;
         self.background_removal_worker.set_current_image(image);
 
-        Ok(Some(preview))
+        Ok(preview)
     }
 
     pub fn handle_remove_background(&mut self) -> Result<BackgroundRemovalResultDto, String> {

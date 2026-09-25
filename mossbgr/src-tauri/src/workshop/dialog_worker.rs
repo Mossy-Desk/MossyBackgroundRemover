@@ -2,11 +2,6 @@ use std::path::PathBuf;
 
 use crate::contracts::FileDialogTrait;
 
-/// Native OS dialogs — picking a file to load, or picking where to save
-/// one. No state, no logic: its value is hiding that this is Tauri
-/// underneath (`FileDialogTrait`) from the orchestrator, not the two
-/// methods' triviality. If either dialog needs real behavior later
-/// (remembering the last directory, say), it lands here.
 pub struct DialogWorker<D: FileDialogTrait> {
     file_dialog: D,
 }

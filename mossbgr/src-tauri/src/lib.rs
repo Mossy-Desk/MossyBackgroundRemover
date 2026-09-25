@@ -3,6 +3,7 @@ pub mod orchestrators;
 pub mod tools;
 pub mod workshop;
 
+use std::path::PathBuf;
 use std::sync::Mutex;
 
 use contracts::{BackgroundRemovalResultDto, ExportResultDto, ImagePreviewDto};
@@ -11,16 +12,6 @@ use tauri::{Manager, State};
 use tools::{ImageCodecTool, OrtSegmentationTool, TauriFileDialogTool};
 use workshop::{BackgroundRemovalWorker, DialogWorker, ImageConverterWorker};
 
-// All three commands below are declared `async fn` on purpose, even though
-// none of them `.await` anything internally: a non-async `#[tauri::command]`
-// runs on the main UI thread in Tauri 2, but every one of these does
-// blocking work — `pick_and_load_image`/`export_result` call a native file
-// dialog, whose own blocking API must NOT be called from the main thread
-// (showing the dialog itself needs that thread's event loop), and
-// `remove_background` runs model inference. `async fn` makes Tauri dispatch
-// the command via `async_runtime::spawn` instead, off the main thread,
-// matching tauri-plugin-dialog's own documented usage.
-
 #[tauri::command]
 async fn pick_and_load_image(
     state: State<'_, Mutex<BackgroundRemoverOrchestrator>>,
@@ -28,7 +19,18 @@ async fn pick_and_load_image(
     state
         .lock()
         .map_err(|_| "Failed to acquire state lock".to_string())?
-        .handle_pick_and_load_image()
+        .get_path_from_dialog()
+}
+
+#[tauri::command]
+async fn load_image_from_drop(
+    state: State<'_, Mutex<BackgroundRemoverOrchestrator>>,
+    path: String,
+) -> Result<ImagePreviewDto, String> {
+    state
+        .lock()
+        .map_err(|_| "Failed to acquire state lock".to_string())?
+        .get_path_from_drop(PathBuf::from(path))
 }
 
 #[tauri::command]
@@ -78,6 +80,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             pick_and_load_image,
+            load_image_from_drop,
             remove_background,
             export_result
         ])

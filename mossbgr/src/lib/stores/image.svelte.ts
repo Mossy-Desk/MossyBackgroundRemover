@@ -9,9 +9,17 @@ class ImageStore {
 	savedPath: string | null = $state(null);
 
 	async pickImage() {
+		await this.#load(() => api.pickAndLoadImage());
+	}
+
+	async loadFromDrop(path: string) {
+		await this.#load(() => api.loadImageFromDrop(path));
+	}
+
+	async #load(action: () => Promise<ImagePreviewDto | null>) {
 		this.busy = true;
 		try {
-			const picked = await api.pickAndLoadImage();
+			const picked = await action();
 			if (picked === null) return; // user cancelled — not an error
 			this.original = picked;
 			this.result = null;

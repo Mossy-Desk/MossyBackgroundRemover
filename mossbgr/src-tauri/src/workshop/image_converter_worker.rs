@@ -5,16 +5,8 @@ use image::{DynamicImage, GenericImageView};
 
 use crate::contracts::{ImageCodecTrait, ImagePreviewDto};
 
-/// Preview images sent over IPC are downscaled to this max dimension to
-/// keep the JSON payload sane. Export always re-encodes the full-resolution
-/// image a worker holds internally, never a preview built with this.
 const PREVIEW_MAX_DIMENSION: u32 = 1600;
 
-/// Everything that converts an image between representations: decoding a
-/// file into a domain image, turning a domain image into a wire-ready
-/// preview DTO, and encoding a domain image back out to a file. `ImageLoaderWorker`
-/// and `ExportWorker` only deal with dialogs and their own state — every
-/// actual format conversion goes through this worker instead.
 pub struct ImageConverterWorker<C: ImageCodecTrait> {
     image_codec: C,
 }

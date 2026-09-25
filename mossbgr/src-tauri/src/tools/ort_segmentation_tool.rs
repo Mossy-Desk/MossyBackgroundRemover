@@ -9,13 +9,6 @@ use ort::value::TensorRef;
 
 use crate::contracts::SegmentationModelTrait;
 
-// u2netp — the lightweight ("portable") variant of u2net, ~4.4MB instead of
-// u2net's ~176MB — small enough to embed directly in the binary rather than
-// download on first run. Source + checksum verified against rembg's own
-// downloader (rembg/sessions/u2netp.py, `download_models`): re-verify both
-// if this model is ever swapped, and re-run the `embedded_model_bytes_*`
-// tests below, which check the embedded file against that same checksum.
-//
 // This is a third-party model we did not train: U²-Net (Qin et al.,
 // "U²-Net: Going Deeper with Nested U-Structure for Salient Object
 // Detection", Pattern Recognition, 2020 — https://github.com/xuebinqin/U-2-Net,
@@ -24,24 +17,10 @@ use crate::contracts::SegmentationModelTrait;
 // ../../models/LICENSE-u2net.
 const MODEL_BYTES: &[u8] = include_bytes!("../../models/u2netp.onnx");
 
-// u2netp's fixed input resolution and preprocessing constants, matched
-// exactly to rembg's own preprocessing (rembg/sessions/base.py::normalize)
-// so this produces the same masks as the reference implementation:
-// resize to 320x320 with Lanczos, divide by the resized image's own max
-// pixel value (not a fixed 255), then per-channel (x - mean) / std.
 const MODEL_INPUT_SIZE: u32 = 320;
 const NORM_MEAN: [f32; 3] = [0.485, 0.456, 0.406];
 const NORM_STD: [f32; 3] = [0.229, 0.224, 0.225];
 
-/// Runs the embedded u2netp ONNX segmentation model via the `ort` crate.
-/// The only file that imports `ort`, `ort::value`, or `ndarray` —
-/// `DynamicImage`/`GrayImage` crossing `SegmentationModelTrait` is the one
-/// deliberate, narrow exception to vendor isolation here (the same way
-/// `serde` DTOs cross every other boundary in this codebase).
-///
-/// The session is built lazily on first use (not in `new`), so
-/// construction is free — the model bytes are already embedded in the
-/// binary via `include_bytes!`, there's no file or network to wait on.
 pub struct OrtSegmentationTool {
     session: Mutex<Option<Session>>,
 }
@@ -66,13 +45,8 @@ impl OrtSegmentationTool {
                 .map_err(|e| format!("Failed to load segmentation model: {}", e))?;
             *guard = Some(session);
         }
-        // Safe: the branch above guarantees `guard` is `Some` by this point.
         let session = guard.as_mut().expect("session was just initialized");
 
-        // Read the input/output tensor names from the model itself rather
-        // than hardcoding them — u2netp's exported names aren't a stable
-        // public contract, and rembg's own Python implementation does the
-        // same (`self.inner_session.get_inputs()[0].name`).
         let input_name = session.inputs()[0].name().to_string();
         let output_name = session.outputs()[0].name().to_string();
 
@@ -108,8 +82,6 @@ impl Default for OrtSegmentationTool {
     }
 }
 
-/// Resizes to the model's fixed input size and normalizes into an
-/// (1, 3, H, W) float32 tensor, replicating rembg's preprocessing exactly.
 fn preprocess(image: &DynamicImage) -> Array4<f32> {
     let resized = image
         .resize_exact(MODEL_INPUT_SIZE, MODEL_INPUT_SIZE, FilterType::Lanczos3)
@@ -133,9 +105,6 @@ fn preprocess(image: &DynamicImage) -> Array4<f32> {
     input
 }
 
-/// Converts the model's raw first-channel output into an 8-bit mask,
-/// min-max stretched to [0, 255] — matching rembg's postprocessing
-/// (`pred = (pred - pred.min()) / (pred.max() - pred.min())`).
 fn postprocess_to_mask(output: ArrayViewD<f32>) -> Result<GrayImage, String> {
     let shape = output.shape();
     let [_, _, height, width] = shape else {
@@ -182,8 +151,6 @@ mod tests {
     use md5::{Digest, Md5};
     use ndarray::Array;
 
-    // Only referenced from this test — re-verify against rembg's downloader
-    // (rembg/sessions/u2netp.py) if the embedded model is ever swapped.
     const MODEL_MD5: &str = "8e83ca70e441ab06c318d82300c84806";
 
     #[test]
@@ -207,8 +174,6 @@ mod tests {
         let tensor = preprocess(&image);
 
         assert_eq!(tensor.shape(), &[1, 3, 320, 320]);
-        // Pure red at max brightness: R channel normalized value should be
-        // (1.0 - mean_r) / std_r, others (0.0 - mean_c) / std_c.
         let expected_r = (1.0 - NORM_MEAN[0]) / NORM_STD[0];
         assert!((tensor[[0, 0, 0, 0]] - expected_r).abs() < 1e-4);
     }
@@ -227,8 +192,6 @@ mod tests {
 
     #[test]
     fn predict_mask_runs_the_real_embedded_model_end_to_end() {
-        // The model ships inside the binary, so this can exercise real
-        // inference instead of needing an integration test with a fixture.
         let tool = OrtSegmentationTool::new();
         let image = DynamicImage::ImageRgba8(RgbaImage::from_pixel(
             50,

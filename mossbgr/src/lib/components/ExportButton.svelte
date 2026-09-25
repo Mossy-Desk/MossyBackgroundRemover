@@ -12,20 +12,15 @@
 	} = $props();
 </script>
 
-<div class="export-row">
-	<button class="button button-success" onclick={onExport} disabled={disabled || busy}>
-		Export as PNG&hellip;
-	</button>
-	{#if savedPath}
-		<span class="small">Saved to {savedPath}</span>
-	{/if}
-</div>
+<button class="button button-success" onclick={onExport} disabled={disabled || busy}>
+	Export as PNG&hellip;
+</button>
+{#if savedPath}
+	<span class="small saved">Saved to {savedPath}</span>
+{/if}
 
 <style>
-	.export-row {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-bottom: 1.5rem;
+	.saved {
+		overflow-wrap: anywhere;
 	}
 </style>

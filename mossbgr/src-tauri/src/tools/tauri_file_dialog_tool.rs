@@ -4,9 +4,6 @@ use tauri_plugin_dialog::DialogExt;
 
 use crate::contracts::FileDialogTrait;
 
-/// Native OS file dialogs via `tauri-plugin-dialog`. The only file that
-/// imports `tauri_plugin_dialog` — everything above this reaches it
-/// through `FileDialogTrait`.
 pub struct TauriFileDialogTool {
     app_handle: tauri::AppHandle,
 }

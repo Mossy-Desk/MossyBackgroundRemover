@@ -7,8 +7,6 @@ use image::{DynamicImage, ImageFormat};
 
 use crate::contracts::ImageCodecTrait;
 
-/// Decoding/encoding image bytes via the `image` crate + `base64`. The
-/// only file that imports either crate directly.
 pub struct ImageCodecTool;
 
 impl ImageCodecTool {

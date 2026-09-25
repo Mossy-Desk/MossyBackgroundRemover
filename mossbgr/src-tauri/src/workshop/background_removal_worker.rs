@@ -3,11 +3,6 @@ use image::{DynamicImage, GenericImageView, RgbaImage};
 
 use crate::contracts::SegmentationModelTrait;
 
-/// Owns the image currently being worked on and the last removal result
-/// (domain state) — the same way `TimerWorker` owns its `Timer`: state
-/// exists here because the logic in this worker needs it, not as a bare
-/// storage slot. Only returns domain types (`RgbaImage`); turning them into
-/// a wire-ready DTO is `ImageConverterWorker`'s job.
 pub struct BackgroundRemovalWorker<M: SegmentationModelTrait> {
     segmentation_model: M,
     current_image: Option<DynamicImage>,
@@ -31,12 +26,6 @@ impl<M: SegmentationModelTrait> BackgroundRemovalWorker<M> {
         self.current_image.as_ref()
     }
 
-    /// Runs the model on the current image, upscales its native-resolution
-    /// mask back to the image's own dimensions, and composites it as the
-    /// alpha channel of a full-resolution result. This upscale/composite
-    /// step is the "rembg practice" quality logic and belongs here in the
-    /// worker, not in the segmentation tool (which only knows the model's
-    /// fixed native resolution).
     pub fn remove_background(&mut self) -> Result<RgbaImage, String> {
         let original = self
             .current_image
@@ -71,9 +60,6 @@ mod tests {
 
     impl SegmentationModelTrait for MockSegmentationModel {
         fn predict_mask(&self, _image: &DynamicImage) -> Result<GrayImage, String> {
-            // A tiny native-resolution mask, left half transparent (0),
-            // right half opaque (255) — resized separately from the
-            // caller's actual image size.
             let mut mask = GrayImage::new(2, 1);
             mask.put_pixel(0, 0, Luma([0]));
             mask.put_pixel(1, 0, Luma([255]));
@@ -102,10 +88,8 @@ mod tests {
         let result = worker.remove_background().unwrap();
 
         assert_eq!(result.dimensions(), (4, 2));
-        // Left half of the mask was 0 (transparent), right half 255 (opaque).
         assert_eq!(result.get_pixel(0, 0).0[3], 0);
         assert_eq!(result.get_pixel(3, 0).0[3], 255);
-        // Color channels come from the original image, untouched.
         assert_eq!(&result.get_pixel(0, 0).0[..3], &[200, 100, 50]);
     }
 

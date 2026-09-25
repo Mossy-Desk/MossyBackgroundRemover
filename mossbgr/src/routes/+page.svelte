@@ -12,12 +12,14 @@
 </script>
 
 <main>
-	<h1 class="h2">Mossy Background Remover</h1>
-
 	<ErrorBanner message={imageStore.error} onDismiss={dismissError} />
 
 	{#if !imageStore.original}
-		<ImageDropZone busy={imageStore.busy} onPick={() => imageStore.pickImage()} />
+		<ImageDropZone
+			busy={imageStore.busy}
+			onPick={() => imageStore.pickImage()}
+			onDrop={(path) => imageStore.loadFromDrop(path)}
+		/>
 	{:else}
 		<BeforeAfterPreview
 			original={imageStore.original}
@@ -25,20 +27,27 @@
 			busy={imageStore.busy}
 			onRemoveBackground={() => imageStore.removeBackground()}
 			onChooseAnother={() => imageStore.reset()}
-		/>
-		<ExportButton
-			disabled={!imageStore.result}
-			busy={imageStore.busy}
-			savedPath={imageStore.savedPath}
-			onExport={() => imageStore.exportResult()}
-		/>
+		>
+			<ExportButton
+				disabled={!imageStore.result}
+				busy={imageStore.busy}
+				savedPath={imageStore.savedPath}
+				onExport={() => imageStore.exportResult()}
+			/>
+		</BeforeAfterPreview>
 	{/if}
 </main>
 
 <style>
 	main {
-		max-width: 900px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center; /* content sits in the middle of the window, not stuck to the top */
+		gap: 1.25rem;
+		min-height: 100vh;
+		max-width: min(1200px, 100%);
 		margin: 0 auto;
-		padding: 1.5rem;
+		/* Breathing room that scales with the window. */
+		padding: clamp(1.5rem, 6vh, 4rem) clamp(1rem, 4vw, 3rem);
 	}
 </style>
